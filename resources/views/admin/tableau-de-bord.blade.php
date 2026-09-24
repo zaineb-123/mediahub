@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tableau de bord</title>
+</head>
+<body>
+
+    <h1>Tableau de bord administrateur</h1>
+
+    <p>Bienvenue dans l'espace d'administration.</p>
+
+</body>
+</html>
