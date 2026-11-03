@@ -1,9 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Accueil</title>
-</head>
-<body>
-    <h1>Bienvenue sur mon site</h1>
-</body>
-</html>
+@extends('layouts.app')
+
+@section('titre', 'Accueil')
+
+@section('contenu')
+    <h1>Bienvenue sur MediaHub</h1>
+    <p>La plateforme de gestion et de diffusion de contenus multimédias.</p>
+@endsection
