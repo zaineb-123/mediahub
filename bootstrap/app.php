@@ -11,7 +11,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Rediriger les visiteurs non connectés vers la connexion
+        $middleware->redirectGuestsTo('/connexion');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

@@ -22,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -46,12 +47,20 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Les publications de l'utilisateur.
+     */
     public function publications()
-{
-    return $this->hasMany(Publication::class);
-}
-public function commentaires()
-{
-    return $this->hasMany(Commentaire::class);
-}
+    {
+        return $this->hasMany(Publication::class);
+    }
+
+    /**
+     * Les commentaires de l'utilisateur.
+     */
+    public function commentaires()
+    {
+        return $this->hasMany(Commentaire::class);
+    }
 }

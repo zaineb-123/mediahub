@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Categorie;
-use App\Models\Publication;
 use App\Http\Requests\StorePublicationRequest;
 use App\Http\Requests\UpdatePublicationRequest;
+use App\Models\Categorie;
+use App\Models\Publication;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ContenuController extends Controller
 {
+    use AuthorizesRequests;
+
     public function index()
     {
         $publications = Publication::with(['categorie', 'auteur'])
@@ -29,7 +32,7 @@ class ContenuController extends Controller
     {
         $publication = Publication::create([
             ...$request->validated(),
-            'user_id' => 1,
+            'user_id' => auth()->id(),
         ]);
 
         return redirect()
@@ -37,38 +40,41 @@ class ContenuController extends Controller
             ->with('succes', 'Publication créée avec succès.');
     }
 
-    public function show($contenu)
+    public function show(Publication $contenu)
     {
-        $publication = Publication::with(['categorie', 'auteur'])
-            ->findOrFail($contenu);
+        $publication = $contenu->load(['categorie', 'auteur']);
 
-        return view('contenu', compact('publication'));
+        return view('contenus.show', compact('publication'));
     }
 
-    public function edit($contenu)
+    public function edit(Publication $contenu)
     {
-        $publication = Publication::findOrFail($contenu);
+        $this->authorize('update', $contenu);
+
+        $publication = $contenu;
         $categories = Categorie::all();
 
         return view('contenus.edit', compact('publication', 'categories'));
     }
 
-    public function update(UpdatePublicationRequest $request, $contenu)
-    {
-        $publication = Publication::findOrFail($contenu);
+    public function update(
+        UpdatePublicationRequest $request,
+        Publication $contenu
+    ) {
+        $this->authorize('update', $contenu);
 
-        $publication->update($request->validated());
+        $contenu->update($request->validated());
 
         return redirect()
-            ->route('contenus.show', ['contenu' => $publication->id])
+            ->route('contenus.show', ['contenu' => $contenu->id])
             ->with('succes', 'Publication mise à jour avec succès.');
     }
 
-    public function destroy($contenu)
+    public function destroy(Publication $contenu)
     {
-        $publication = Publication::findOrFail($contenu);
+        $this->authorize('delete', $contenu);
 
-        $publication->delete();
+        $contenu->delete();
 
         return redirect()
             ->route('contenus.index')
