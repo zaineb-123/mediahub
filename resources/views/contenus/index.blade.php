@@ -1,23 +1,61 @@
 @extends('layouts.app')
 
-@section('titre', 'Liste des contenus')
+@section('titre', 'Liste des publications')
 
 @section('contenu')
 
-    <h1>Liste des contenus MediaHub</h1>
+<h1>Liste des publications MediaHub</h1>
 
-    @forelse ($contenus as $contenu)
+<a href="{{ route('contenus.create') }}">
+    Ajouter une publication
+</a>
 
-        <x-carte titre="{{ $contenu->titre }}">
+@if($publications->count() > 0)
 
-            <p>{{ $contenu->description }}</p>
+    @foreach ($publications as $publication)
+
+        <x-carte titre="{{ $publication->titre }}">
+
+            <p>{{ $publication->contenu }}</p>
+
+            <p>
+                Catégorie :
+                {{ $publication->categorie->nom ?? 'Sans catégorie' }}
+            </p>
+
+            <p>
+                Auteur :
+                {{ $publication->auteur->name ?? 'Auteur inconnu' }}
+            </p>
+    <a href="{{ route('contenus.edit', ['contenu' => $publication->id]) }}">
+        Modifier
+    </a>
+
+    <form method="POST"
+        action="{{ route('contenus.destroy', ['contenu' => $publication->id]) }}"
+        style="display:inline;">
+
+        @csrf
+        @method('DELETE')
+
+        <button type="submit"
+                onclick="return confirm('Voulez-vous vraiment supprimer cette publication ?')">
+            Supprimer
+        </button>
+    </form>
 
         </x-carte>
 
-    @empty
+    @endforeach
 
-        <p>Aucun contenu disponible pour le moment.</p>
+@else
 
-    @endforelse
+    <p>Aucune publication disponible pour le moment.</p>
+
+@endif
+
+<div>
+    {{ $publications->links() }}
+</div>
 
 @endsection

@@ -7,10 +7,22 @@
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 </head>
 <body>
+
     @include('partials.navigation')
+
     <main class="conteneur">
+
+        @if (session('succes'))
+            <div class="alerte alerte-succes">
+                {{ session('succes') }}
+            </div>
+        @endif
+
         @yield('contenu')
-</main>
+
+    </main>
+
     @include('partials.pied-de-page')
+
 </body>
 </html>
