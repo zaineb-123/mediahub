@@ -9,7 +9,7 @@
 
     <h1>Modifier une catégorie</h1>
 
-   <form action="{{ route('contenus.update', ['contenu' => request()->route('contenu')]) }}"
+ <form action="{{ route('categories.update', ['categorie' => $categorie->id]) }}"
       method="POST">
         @csrf
         @method('PUT')
