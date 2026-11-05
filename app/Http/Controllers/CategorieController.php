@@ -3,7 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Categorie;
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreCategorieRequest;
+use App\Http\Requests\UpdateCategorieRequest;
 
 class CategorieController extends Controller
 {
@@ -19,48 +20,35 @@ class CategorieController extends Controller
         return view('categories.create');
     }
 
-   public function store(Request $request)
-{
-    $request->validate([
-        'nom' => 'required|string|max:255',
-        'slug' => 'required|string|max:255|unique:categories,slug',
-    ], [
-        'slug.unique' => 'Ce slug existe déjà. Choisissez un autre slug.',
-    ]);
-
-    Categorie::create($request->only('nom', 'slug'));
-
-    return redirect()
-        ->route('categories.index')
-        ->with('succes', 'Catégorie créée avec succès.');
-}
-
-        public function edit(Categorie $categorie)
+    public function store(StoreCategorieRequest $request)
     {
-    return view('categories.edit', compact('categorie'));
+        Categorie::create($request->validated());
+
+        return redirect()
+            ->route('categories.index')
+            ->with('succes', 'Catégorie créée avec succès.');
     }
 
-    public function update(Request $request, Categorie $categorie)
-{
-    $request->validate([
-        'nom' => 'required|string|max:255',
-        'slug' => 'required|string|max:255|unique:categories,slug,' . $categorie->id,
-    ]);
-
-    $categorie->update($request->only('nom', 'slug'));
-
-    return redirect()
-        ->route('categories.index')
-        ->with('succes', 'Catégorie mise à jour avec succès.');
-}
-
-
-        public function destroy(Categorie $categorie)
+    public function edit(Categorie $categorie)
     {
-    $categorie->delete();
-    return redirect()
-    ->route('categories.index')
-    ->with('succes', 'Catégorie supprimée avec succès.');
+        return view('categories.edit', compact('categorie'));
     }
 
+    public function update(UpdateCategorieRequest $request, Categorie $categorie)
+    {
+        $categorie->update($request->validated());
+
+        return redirect()
+            ->route('categories.index')
+            ->with('succes', 'Catégorie mise à jour avec succès.');
+    }
+
+    public function destroy(Categorie $categorie)
+    {
+        $categorie->delete();
+
+        return redirect()
+            ->route('categories.index')
+            ->with('succes', 'Catégorie supprimée avec succès.');
+    }
 }

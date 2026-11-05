@@ -1,67 +1,56 @@
+
 @extends('layouts.app')
+
+@section('titre', 'Ajouter une catégorie')
 
 @section('contenu')
 
-<div class="container">
-
+<div class="conteneur">
     <h1>Ajouter une catégorie</h1>
 
     <form action="{{ route('categories.store') }}" method="POST">
-
         @csrf
-        @if ($errors->any())
-    <div class="alerte alerte-erreur">
-        <ul>
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
 
-        <div class="mb-3">
-            <label for="nom" class="form-label">
-                Nom de la catégorie
-            </label>
+        {{-- Nom --}}
+        <div class="form-group">
+            <label for="nom">Nom de la catégorie</label>
 
             <input
                 type="text"
-                name="nom"
                 id="nom"
-                class="form-control"
+                name="nom"
                 value="{{ old('nom') }}"
+                class="@error('nom') is-invalid @enderror"
                 placeholder="Exemple : Technologie"
-                required
             >
+
+            @error('nom')
+                <span class="erreur-champ">{{ $message }}</span>
+            @enderror
         </div>
 
-        <div class="mb-3">
-            <label for="slug" class="form-label">
-                Slug
-            </label>
+        {{-- Slug --}}
+        <div class="form-group">
+            <label for="slug">Slug</label>
 
             <input
                 type="text"
-                name="slug"
                 id="slug"
-                class="form-control"
+                name="slug"
                 value="{{ old('slug') }}"
+                class="@error('slug') is-invalid @enderror"
                 placeholder="Exemple : technologie"
-                required
             >
+
+            @error('slug')
+                <span class="erreur-champ">{{ $message }}</span>
+            @enderror
         </div>
 
-        <button type="submit" class="btn btn-primary">
-            Enregistrer
-        </button>
+        <button type="submit">Ajouter</button>
 
-        <a href="{{ route('categories.index') }}"
-           class="btn btn-secondary">
-            Annuler
-        </a>
-
+        <a href="{{ route('categories.index') }}">Annuler</a>
     </form>
-
 </div>
 
 @endsection

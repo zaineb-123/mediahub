@@ -6,48 +6,52 @@
 @section('contenu')
 
 <div class="conteneur">
-
     <h1>Modifier une catégorie</h1>
 
- <form action="{{ route('categories.update', ['categorie' => $categorie->id]) }}"
-      method="POST">
+    <form action="{{ route('categories.update', ['categorie' => $categorie->id]) }}" method="POST">
         @csrf
         @method('PUT')
 
-        <div>
+        {{-- Nom --}}
+        <div class="form-group">
             <label for="nom">Nom de la catégorie</label>
 
             <input
                 type="text"
-                name="nom"
                 id="nom"
+                name="nom"
                 value="{{ old('nom', $categorie->nom) }}"
-                required
+                class="@error('nom') is-invalid @enderror"
+                placeholder="Exemple : Technologie"
             >
+
+            @error('nom')
+                <span class="erreur-champ">{{ $message }}</span>
+            @enderror
         </div>
 
-        <div>
+        {{-- Slug --}}
+        <div class="form-group">
             <label for="slug">Slug</label>
 
             <input
                 type="text"
-                name="slug"
                 id="slug"
+                name="slug"
                 value="{{ old('slug', $categorie->slug) }}"
-                required
+                class="@error('slug') is-invalid @enderror"
+                placeholder="Exemple : technologie"
             >
+
+            @error('slug')
+                <span class="erreur-champ">{{ $message }}</span>
+            @enderror
         </div>
 
-        <button type="submit">
-            Enregistrer les modifications
-        </button>
+        <button type="submit">Enregistrer les modifications</button>
 
-        <a href="{{ route('categories.index') }}">
-            Annuler
-        </a>
-
+        <a href="{{ route('categories.index') }}">Annuler</a>
     </form>
-
 </div>
 
 @endsection
