@@ -9,7 +9,11 @@
 
     <h1>Ajouter une publication</h1>
 
-    <form action="{{ route('contenus.store') }}" method="POST">
+    <form
+        action="{{ route('contenus.store') }}"
+        method="POST"
+        enctype="multipart/form-data"
+    >
 
         @csrf
 
@@ -77,6 +81,42 @@
             </select>
 
             @error('categorie_id')
+                <span class="erreur-champ">{{ $message }}</span>
+            @enderror
+        </div>
+
+        {{-- Image --}}
+        <div>
+            <label for="image">Image (2 Mo maximum)</label>
+
+            <input
+                type="file"
+                name="image"
+                id="image"
+                accept="image/*"
+                class="@error('image') is-invalid @enderror"
+            >
+
+            @error('image')
+                <span class="erreur-champ">{{ $message }}</span>
+            @enderror
+        </div>
+
+        {{-- Fichier audio ou vidéo --}}
+        <div>
+            <label for="fichier_media">
+                Fichier audio ou vidéo (20 Mo maximum)
+            </label>
+
+            <input
+                type="file"
+                name="fichier_media"
+                id="fichier_media"
+                accept="audio/*,video/mp4"
+                class="@error('fichier_media') is-invalid @enderror"
+            >
+
+            @error('fichier_media')
                 <span class="erreur-champ">{{ $message }}</span>
             @enderror
         </div>

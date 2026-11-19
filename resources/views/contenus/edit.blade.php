@@ -12,6 +12,7 @@
     <form
         action="{{ route('contenus.update', ['contenu' => $publication->id]) }}"
         method="POST"
+        enctype="multipart/form-data"
     >
 
         @csrf
@@ -81,6 +82,70 @@
             </select>
 
             @error('categorie_id')
+                <span class="erreur-champ">{{ $message }}</span>
+            @enderror
+        </div>
+
+        {{-- Image actuelle --}}
+        @if ($publication->image)
+            <div>
+                <p>Image actuelle :</p>
+
+                <img
+                    src="{{ \Illuminate\Support\Facades\Storage::url($publication->image) }}"
+                    alt="Image de la publication"
+                    style="max-width: 200px; height: auto;"
+                >
+            </div>
+        @endif
+
+        <div>
+            <label for="image">Remplacer l'image (2 Mo maximum)</label>
+
+            <input
+                type="file"
+                name="image"
+                id="image"
+                accept="image/*"
+                class="@error('image') is-invalid @enderror"
+            >
+
+            @error('image')
+                <span class="erreur-champ">{{ $message }}</span>
+            @enderror
+        </div>
+
+        {{-- Média actuel --}}
+        @if ($publication->fichier_media)
+            <div>
+                <p>Fichier média actuel :</p>
+
+                <a
+                    href="{{ \Illuminate\Support\Facades\Storage::url($publication->fichier_media) }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    Consulter le fichier actuel
+                </a>
+
+                <p>Type : {{ $publication->type_media }}</p>
+            </div>
+        @endif
+
+        <div>
+            <label for="fichier_media">
+                Remplacer le fichier audio ou vidéo (20 Mo maximum)
+            </label>
+
+            <input
+                type="file"
+                name="fichier_media"
+                id="fichier_media"
+                accept="audio/*,video/mp4"
+                class="@error('fichier_media') is-invalid @enderror"
+            >
+
+            @error('fichier_media')
                 <span class="erreur-champ">{{ $message }}</span>
             @enderror
         </div>

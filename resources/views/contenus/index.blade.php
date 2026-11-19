@@ -1,3 +1,4 @@
+
 @extends('layouts.app')
 
 @section('titre', 'Liste des publications')
@@ -10,8 +11,29 @@
 @endauth
 
 @if ($publications->count() > 0)
+
     @foreach ($publications as $publication)
         <x-carte titre="{{ $publication->titre }}">
+
+            {{-- Afficher la miniature --}}
+            @if ($publication->miniature)
+                <div style="margin-bottom: 15px;">
+                    <img
+                        src="{{ asset('storage/' . $publication->miniature) }}"
+                        alt="Miniature de {{ $publication->titre }}"
+                        style="width: 300px; height: 300px; object-fit: cover; border-radius: 8px;"
+                    >
+                </div>
+            @elseif ($publication->image)
+                <div style="margin-bottom: 15px;">
+                    <img
+                        src="{{ asset('storage/' . $publication->image) }}"
+                        alt="{{ $publication->titre }}"
+                        style="width: 300px; height: 300px; object-fit: cover; border-radius: 8px;"
+                    >
+                </div>
+            @endif
+
             <p>{{ $publication->contenu }}</p>
 
             <p>
@@ -51,8 +73,10 @@
                     </button>
                 </form>
             @endcan
+
         </x-carte>
     @endforeach
+
 @else
     <p>Aucune publication disponible pour le moment.</p>
 @endif

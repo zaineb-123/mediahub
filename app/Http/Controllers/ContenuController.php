@@ -7,6 +7,9 @@ use App\Http\Requests\UpdatePublicationRequest;
 use App\Models\Categorie;
 use App\Models\Publication;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
 class ContenuController extends Controller
 {
@@ -30,10 +33,53 @@ class ContenuController extends Controller
 
     public function store(StorePublicationRequest $request)
     {
-        $publication = Publication::create([
-            ...$request->validated(),
-            'user_id' => auth()->id(),
-        ]);
+        $donnees = $request->validated();
+
+        // Enregistrer l'image et générer sa miniature
+        if ($request->hasFile('image')) {
+            $imageFile = $request->file('image');
+
+            // Enregistrer l'image originale
+            $donnees['image'] = $imageFile->store(
+                'publications',
+                'public'
+            );
+
+            // Générer une miniature de 300 x 300 pixels
+            $manager = new ImageManager(new Driver());
+
+            $image = $manager->read($imageFile->getPathname());
+            $image->cover(300, 300);
+
+            // Enregistrer la miniature
+            $nomMiniature = 'miniatures/' . uniqid() . '.jpg';
+
+            Storage::disk('public')->put(
+                $nomMiniature,
+                (string) $image->toJpeg(80)
+            );
+
+            $donnees['miniature'] = $nomMiniature;
+        }
+
+        // Enregistrer le fichier audio ou vidéo
+        if ($request->hasFile('fichier_media')) {
+            $fichier = $request->file('fichier_media');
+
+            $donnees['fichier_media'] = $fichier->store(
+                'medias',
+                'public'
+            );
+
+            $donnees['type_media'] = str_starts_with(
+                $fichier->getMimeType(),
+                'audio/'
+            ) ? 'audio' : 'video';
+        }
+
+        $donnees['user_id'] = auth()->id();
+
+        $publication = Publication::create($donnees);
 
         return redirect()
             ->route('contenus.show', ['contenu' => $publication->id])
@@ -63,7 +109,69 @@ class ContenuController extends Controller
     ) {
         $this->authorize('update', $contenu);
 
-        $contenu->update($request->validated());
+        $donnees = $request->validated();
+
+        // Remplacer l'image et sa miniature si une nouvelle image est envoyée
+        if ($request->hasFile('image')) {
+
+            // Supprimer l'ancienne image
+            if ($contenu->image) {
+                Storage::disk('public')->delete($contenu->image);
+            }
+
+            // Supprimer l'ancienne miniature
+            if ($contenu->miniature) {
+                Storage::disk('public')->delete($contenu->miniature);
+            }
+
+            $imageFile = $request->file('image');
+
+            // Enregistrer la nouvelle image originale
+            $donnees['image'] = $imageFile->store(
+                'publications',
+                'public'
+            );
+
+            // Générer la nouvelle miniature
+            $manager = new ImageManager(new Driver());
+
+            $image = $manager->read($imageFile->getPathname());
+            $image->cover(300, 300);
+
+            // Enregistrer la nouvelle miniature
+            $nomMiniature = 'miniatures/' . uniqid() . '.jpg';
+
+            Storage::disk('public')->put(
+                $nomMiniature,
+                (string) $image->toJpeg(80)
+            );
+
+            $donnees['miniature'] = $nomMiniature;
+        }
+
+        // Remplacer le fichier audio ou vidéo si nécessaire
+        if ($request->hasFile('fichier_media')) {
+
+            if ($contenu->fichier_media) {
+                Storage::disk('public')->delete(
+                    $contenu->fichier_media
+                );
+            }
+
+            $fichier = $request->file('fichier_media');
+
+            $donnees['fichier_media'] = $fichier->store(
+                'medias',
+                'public'
+            );
+
+            $donnees['type_media'] = str_starts_with(
+                $fichier->getMimeType(),
+                'audio/'
+            ) ? 'audio' : 'video';
+        }
+
+        $contenu->update($donnees);
 
         return redirect()
             ->route('contenus.show', ['contenu' => $contenu->id])
