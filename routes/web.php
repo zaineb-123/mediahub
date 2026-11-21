@@ -13,9 +13,10 @@ Route::get('/', [PageController::class, 'accueil'])->name('accueil');
 Route::get('/a-propos', [PageController::class, 'aPropos'])->name('a-propos');
 
 // Catégories
-Route::resource('categories', CategorieController::class)
-    ->parameters(['categories' => 'categorie']);
-
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::resource('categories', CategorieController::class)
+        ->parameters(['categories' => 'categorie']);
+});
 // Authentification : visiteurs non connectés uniquement
 Route::middleware('guest')->group(function () {
     Route::get('/inscription', [AuthController::class, 'create'])

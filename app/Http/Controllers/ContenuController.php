@@ -10,19 +10,32 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ContenuController extends Controller
 {
     use AuthorizesRequests;
 
-    public function index()
-    {
-        $publications = Publication::with(['categorie', 'auteur'])
-            ->latest()
-            ->paginate(9);
+    
+public function index()
+{
+    DB::listen(function ($query) {
+        Log::info('Requête SQL exécutée', [
+            'sql' => $query->sql,
+            'bindings' => $query->bindings,
+            'time' => $query->time . ' ms',
+        ]);
+    });
 
-        return view('contenus.index', compact('publications'));
-    }
+    $publications = Publication::with(['categorie', 'auteur'])
+    ->withCount('commentaires')
+    ->latest()
+    ->paginate(9);
+
+    return view('contenus.index', compact('publications'));
+}
+
 
     public function create()
     {

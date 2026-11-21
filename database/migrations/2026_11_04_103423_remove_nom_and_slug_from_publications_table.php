@@ -1,23 +1,16 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('publications', function (Blueprint $table) {
-            $table->dropColumn(['nom', 'slug']);
-        });
+        // Les colonnes nom et slug n'existent pas dans publications.
     }
 
     public function down(): void
     {
-        Schema::table('publications', function (Blueprint $table) {
-            $table->string('nom');
-            $table->string('slug');
-        });
+        // Aucune colonne à restaurer.
     }
 };

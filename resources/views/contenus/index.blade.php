@@ -45,6 +45,10 @@
                 Auteur :
                 {{ $publication->auteur->name ?? 'Auteur inconnu' }}
             </p>
+            <p>
+                Nombre de commentaires :
+               {{ $publication->commentaires_count }}
+            </p>
 
             <a href="{{ route('contenus.show', ['contenu' => $publication->id]) }}">
                 Lire la publication
