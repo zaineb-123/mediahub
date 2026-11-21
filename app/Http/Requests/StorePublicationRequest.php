@@ -1,42 +1,95 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Controllers\Api;
 
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\StorePublicationRequest;
+use App\Http\Resources\PublicationResource;
+use App\Models\Publication;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
-class StorePublicationRequest extends FormRequest
+class PublicationController extends Controller
 {
-    public function authorize(): bool
+    /**
+     * Afficher la liste des publications.
+     */
+    public function index()
     {
-        return true;
+        $publications = Publication::with(['categorie', 'auteur'])
+            ->latest()
+            ->paginate(10);
+
+        return PublicationResource::collection($publications);
     }
 
-    public function rules(): array
+    /**
+     * Afficher les détails d'une publication.
+     */
+    public function show(Publication $publication)
     {
-        return [
-            'titre' => 'required|string|max:255',
-            'contenu' => 'required|string|min:20',
-            'categorie_id' => 'required|exists:categories,id',
-
-            'image' => 'nullable|file|image|max:2048',
-            'fichier_media' => 'nullable|file|mimes:mp3,mp4,wav|max:20480',
-        ];
+        return new PublicationResource(
+            $publication->load(['categorie', 'auteur'])
+        );
     }
 
-    public function messages(): array
+    /**
+     * Créer une nouvelle publication.
+     */
+    public function store(StorePublicationRequest $request)
     {
-        return [
-            'titre.required' => 'Le titre est obligatoire.',
-            'titre.max' => 'Le titre ne doit pas dépasser 255 caractères.',
-            'contenu.required' => 'Le contenu est obligatoire.',
-            'contenu.min' => 'Le contenu doit contenir au moins 20 caractères.',
-            'categorie_id.required' => 'Veuillez choisir une catégorie.',
-            'categorie_id.exists' => 'La catégorie sélectionnée est invalide.',
+        $donnees = $request->validated();
 
-            'image.image' => 'Le fichier doit être une image.',
-            'image.max' => 'L’image ne doit pas dépasser 2 Mo.',
-            'fichier_media.mimes' => 'Le fichier média doit être au format MP3, MP4 ou WAV.',
-            'fichier_media.max' => 'Le fichier média ne doit pas dépasser 20 Mo.',
-        ];
+        // Enregistrer l'image et générer sa miniature
+        if ($request->hasFile('image')) {
+            $imageFile = $request->file('image');
+
+            $donnees['image'] = $imageFile->store(
+                'publications',
+                'public'
+            );
+
+            $manager = new ImageManager(new Driver());
+
+            $image = $manager->read($imageFile->getPathname());
+            $image->cover(300, 300);
+
+            $nomMiniature = 'miniatures/' . uniqid() . '.jpg';
+
+            Storage::disk('public')->put(
+                $nomMiniature,
+                (string) $image->toJpeg(80)
+            );
+
+            $donnees['miniature'] = $nomMiniature;
+        }
+
+        // Enregistrer le fichier audio ou vidéo
+        if ($request->hasFile('fichier_media')) {
+            $fichier = $request->file('fichier_media');
+
+            $donnees['fichier_media'] = $fichier->store(
+                'medias',
+                'public'
+            );
+
+            $donnees['type_media'] = str_starts_with(
+                $fichier->getMimeType(),
+                'audio/'
+            ) ? 'audio' : 'video';
+        }
+
+        // Associer la publication à l'utilisateur connecté
+        $donnees['user_id'] = $request->user()->id;
+
+        $publication = Publication::create($donnees);
+
+        // Charger les relations pour la réponse JSON
+        $publication->load(['categorie', 'auteur']);
+
+        return (new PublicationResource($publication))
+            ->response()
+            ->setStatusCode(201);
     }
 }
